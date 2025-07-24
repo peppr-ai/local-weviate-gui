@@ -5,12 +5,22 @@ from weaviate.config import AdditionalConfig, Timeout
 _client = None
 
 # Connect to Weaviate server
-def get_weaviate_client(cluster_endpoint=None, cluster_api_key=None, use_local=False, vectorizer_integration_keys=None, use_custom=False, http_host_endpoint=None, http_port_endpoint=None, grpc_host_endpoint=None, grpc_port_endpoint=None, custom_secure=False):
+def get_weaviate_client(cluster_endpoint=None, cluster_api_key=None, use_local=False, vectorizer_integration_keys=None, use_custom=False, http_host_endpoint=None, http_port_endpoint=None, grpc_host_endpoint=None, grpc_port_endpoint=None, custom_secure=False, azure_openai_config=None):
     print("get_weaviate_client() called")
     global _client
     
     if _client is None:
         headers = vectorizer_integration_keys if vectorizer_integration_keys else {}
+        
+        # Add Azure OpenAI headers if configuration is provided
+        if azure_openai_config:
+            if azure_openai_config.get("api_key"):
+                headers["X-Azure-Api-Key"] = azure_openai_config["api_key"]
+            if azure_openai_config.get("embedding_deployment"):
+                headers["X-Azure-Deployment-Id"] = azure_openai_config["embedding_deployment"]
+            if azure_openai_config.get("resource_name"):
+                headers["X-Azure-Resource-Name"] = azure_openai_config["resource_name"]
+        
         if cluster_api_key:
             auth_credentials = weaviate.auth.AuthApiKey(cluster_api_key)
         else:

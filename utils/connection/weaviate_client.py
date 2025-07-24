@@ -12,7 +12,8 @@ def initialize_client(
 	http_port_endpoint=None, 
 	grpc_host_endpoint=None, 
 	grpc_port_endpoint=None, 
-	custom_secure=False
+	custom_secure=False,
+	azure_openai_config=None
 ):
 	print("initialize_client() called")
 	try:
@@ -26,7 +27,8 @@ def initialize_client(
 			http_port_endpoint=http_port_endpoint,
 			grpc_host_endpoint=grpc_host_endpoint,
 			grpc_port_endpoint=grpc_port_endpoint,
-			custom_secure=custom_secure
+			custom_secure=custom_secure,
+			azure_openai_config=azure_openai_config
 		)
 		st.session_state.client = client
 		ready, server_version, client_version = status(client)

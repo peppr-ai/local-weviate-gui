@@ -54,6 +54,14 @@ if "jinaai_key" not in st.session_state:
 	st.session_state.jinaai_key = ""
 if "huggingface_key" not in st.session_state:
 	st.session_state.huggingface_key = ""
+
+# Azure OpenAI keys
+if "azure_openai_api_key" not in st.session_state:
+	st.session_state.azure_openai_api_key = ""
+if "azure_openai_embedding_deployment" not in st.session_state:
+	st.session_state.azure_openai_embedding_deployment = ""
+if "azure_openai_resource_name" not in st.session_state:
+	st.session_state.azure_openai_resource_name = ""
 	
 # Active connection state
 if "active_endpoint" not in st.session_state:
@@ -177,6 +185,12 @@ if not st.session_state.client_ready:
 	st.sidebar.text_input("Cohere API Key", type="password", key="cohere_key")
 	st.sidebar.text_input("JinaAI API Key", type="password", key="jinaai_key")
 	st.sidebar.text_input("HuggingFace API Key", type="password", key="huggingface_key")
+	
+	# Azure OpenAI Configuration
+	st.sidebar.markdown("Azure OpenAI Configuration (optional):")
+	st.sidebar.text_input("Azure OpenAI API Key", type="password", key="azure_openai_api_key")
+	st.sidebar.text_input("Azure OpenAI Embedding Deployment", key="azure_openai_embedding_deployment")
+	st.sidebar.text_input("Azure OpenAI Resource Name", key="azure_openai_resource_name")
 
 	# --------------------------------------------------------------------------
 	# Connect/Disconnect Buttons
@@ -195,6 +209,15 @@ if not st.session_state.client_ready:
 			vectorizer_integration_keys["X-JinaAI-Api-Key"] = st.session_state.jinaai_key
 		if st.session_state.huggingface_key:
 			vectorizer_integration_keys["X-HuggingFace-Api-Key"] = st.session_state.huggingface_key
+		
+		# Azure OpenAI Configuration
+		azure_openai_config = None
+		if st.session_state.azure_openai_api_key or st.session_state.azure_openai_embedding_deployment or st.session_state.azure_openai_resource_name:
+			azure_openai_config = {
+				"api_key": st.session_state.azure_openai_api_key,
+				"embedding_deployment": st.session_state.azure_openai_embedding_deployment,
+				"resource_name": st.session_state.azure_openai_resource_name
+			}
 
 		if st.session_state.use_local:
 			if initialize_client(
@@ -202,14 +225,15 @@ if not st.session_state.client_ready:
 				http_port_endpoint=st.session_state.local_http_port,
 				grpc_port_endpoint=st.session_state.local_grpc_port,
 				cluster_api_key=st.session_state.local_api_key,
-				vectorizer_integration_keys=vectorizer_integration_keys
+				vectorizer_integration_keys=vectorizer_integration_keys,
+				azure_openai_config=azure_openai_config
 			):
 				st.sidebar.success("Local connection successful!")
 				# Set active connection info
 				st.session_state.active_endpoint = f"http://localhost:{st.session_state.local_http_port}"
 				st.session_state.active_api_key = st.session_state.local_api_key
 				# Persist the API keys in active_ keys
-				for key in ["openai_key", "cohere_key", "jinaai_key", "huggingface_key"]:
+				for key in ["openai_key", "cohere_key", "jinaai_key", "huggingface_key", "azure_openai_api_key", "azure_openai_embedding_deployment", "azure_openai_resource_name"]:
 					st.session_state[f"active_{key}"] = st.session_state.get(key, "")
 				st.rerun()
 
@@ -224,7 +248,8 @@ if not st.session_state.client_ready:
 				grpc_port_endpoint=st.session_state.custom_grpc_port,
 				custom_secure=st.session_state.custom_secure,
 				cluster_api_key=st.session_state.custom_api_key,
-				vectorizer_integration_keys=vectorizer_integration_keys
+				vectorizer_integration_keys=vectorizer_integration_keys,
+				azure_openai_config=azure_openai_config
 			):
 				st.sidebar.success("Custom Connection successful!")
 				# Set active connection info
@@ -232,7 +257,7 @@ if not st.session_state.client_ready:
 				st.session_state.active_endpoint = f"{protocol}://{st.session_state.custom_http_host}:{st.session_state.custom_http_port}"
 				st.session_state.active_api_key = st.session_state.custom_api_key
 				# Persist the API keys in active_ keys
-				for key in ["openai_key", "cohere_key", "jinaai_key", "huggingface_key"]:
+				for key in ["openai_key", "cohere_key", "jinaai_key", "huggingface_key", "azure_openai_api_key", "azure_openai_embedding_deployment", "azure_openai_resource_name"]:
 					st.session_state[f"active_{key}"] = st.session_state.get(key, "")
 				st.rerun()
 			else:
@@ -248,7 +273,8 @@ if not st.session_state.client_ready:
 				if initialize_client(
 					cluster_endpoint=cloud_endpoint,
 					cluster_api_key=st.session_state.cloud_api_key,
-					vectorizer_integration_keys=vectorizer_integration_keys
+					vectorizer_integration_keys=vectorizer_integration_keys,
+					azure_openai_config=azure_openai_config
 				):
 					st.sidebar.success("Cloud Connection successful!")
 					# Set active connection info
